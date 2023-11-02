@@ -39,11 +39,13 @@ export class JwtStrategy extends PassportStrategy( Strategy ) {
           },});  
         if(!login_user)
             throw new UnauthorizedException('Token not valid')
-        console.log(login_user.timeVigency);
-        console.log(new Date())
-        if (login_user.timeVigency > new Date()) 
-            throw new UnauthorizedException('timeVigency outime')
         
+        if (login_user.timeVigency <  new Date()) 
+            throw new UnauthorizedException('timeVigency outime')
+        const fechaActual = new Date();
+        fechaActual.setHours(fechaActual.getHours() + 8);
+        login_user.timeVigency = fechaActual;
+        await this.loginUserRepository.save(login_user);
         return user;
     }
 

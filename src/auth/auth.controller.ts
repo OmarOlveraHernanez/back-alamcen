@@ -12,9 +12,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
-import { Repository } from 'typeorm';
 
-import { LoginUser } from './entities/login.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
