@@ -1,6 +1,7 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Product } from '../../products/entities';
 import { LoginUser } from './login.entity';
+import { Almacen } from 'src/almacen/entities/almacen.entity';
 
 
 @Entity('users')
@@ -27,11 +28,18 @@ export class User {
     })
     isActive: boolean;
 
+
     @Column('text', {
         array: true,
         default: ['user']
     })
     roles: string[];
+
+
+    @Column("json", { nullable: true })
+    resource: any;
+   
+
 
     @Column({
         type: 'timestamp', 
@@ -45,6 +53,10 @@ export class User {
     updatedAt: Date;
 
     
+    
+    @ManyToMany(type => Almacen, almacen => almacen.users)
+    almacenes: Almacen[];
+
     @OneToMany(
         () => LoginUser, 
         loginUser => loginUser.user)
