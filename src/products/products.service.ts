@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -9,6 +9,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage, Product } from './entities';
 import { User } from '../auth/entities/user.entity';
+import { Almacen } from 'src/almacen/entities/almacen.entity';
 
 @Injectable()
 export class ProductsService {
@@ -23,21 +24,24 @@ export class ProductsService {
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
 
+    @InjectRepository(Almacen)
+    private readonly almacenRepository: Repository<Almacen>,
+
     private readonly dataSource: DataSource,
 
   ) {}
 
 
 
-  async create(createProductDto: CreateProductDto, user: User) {
+  async create(createProductDto: CreateProductDto) {
     
     try {
-      const { images = [], ...productDetails } = createProductDto;
+      const { almacenes = [] , images = [], ...productDetails } = createProductDto;
 
       const product = this.productRepository.create({
         ...productDetails,
         images: images.map( image => this.productImageRepository.create({ url: image }) ),
-        user,
+        almacenes:await this.almacenRepository.findBy({ id: In(createProductDto.almacenes ) })
       });
       
       await this.productRepository.save( product );
@@ -75,14 +79,20 @@ export class ProductsService {
     let product: Product;
 
     if ( isUUID(term) ) {
-      product = await this.productRepository.findOneBy({ id: term });
+      //product = await this.productRepository.findOneBy({ id: term });
+      product = await this.productRepository
+      .createQueryBuilder('pro')
+      .leftJoinAndSelect('pro.almacenes', 'Almacenes')
+      .leftJoinAndSelect('pro.images','prodImages')
+      .where('pro.id = :id', { id: term })
+      .getOne();;
     } else {
       const queryBuilder = this.productRepository.createQueryBuilder('prod'); 
       product = await queryBuilder
-        .where('UPPER(title) =:title or slug =:slug', {
-          title: term.toUpperCase(),
-          slug: term.toLowerCase(),
-        })
+      .where("UPPER(prod.resource->>'name') = UPPER(:term) OR UPPER(prod.resource->>'code') = UPPER(:term) OR UPPER(prod.resource->>'serie') = UPPER(:term)", {
+        term: term,  
+      })
+        .leftJoinAndSelect('pro.almacenes', 'Almacenes')
         .leftJoinAndSelect('prod.images','prodImages')
         .getOne();
     }
@@ -106,7 +116,7 @@ export class ProductsService {
 
   async update( id: string, updateProductDto: UpdateProductDto, user: User ) {
 
-    const { images, ...toUpdate } = updateProductDto;
+    const {almacenes, images, ...toUpdate } = updateProductDto;
 
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
@@ -129,7 +139,7 @@ export class ProductsService {
       }
       
       // await this.productRepository.save( product );
-      product.user = user;
+  
       
       await queryRunner.manager.save( product );
 

@@ -63,11 +63,7 @@ export class User {
 
     loginUsers: LoginUser;
 
-    @OneToMany(
-        () => Product,
-        ( product ) => product.user
-    )
-    product: Product;
+    
 
 
     @BeforeInsert()

@@ -17,15 +17,15 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Auth()
+  //@Auth()
   @ApiResponse({ status: 201, description: 'Product was created', type: Product  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 403, description: 'Forbidden. Token related.' })
   create(
     @Body() createProductDto: CreateProductDto,
-    @GetUser() user: User,
+    //@GetUser() user: User,
   ) {
-    return this.productsService.create(createProductDto, user );
+    return this.productsService.create(createProductDto );
   }
 
   @Get()

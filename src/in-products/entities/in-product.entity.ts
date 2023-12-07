@@ -1,11 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { User } from "src/auth/entities/user.entity";
 import { Product } from "src/products/entities";
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-@Entity({ name: 'almacenes' })
-export class Almacen {
-
+@Entity({ name: 'in_product' })
+export class InProduct {
 
     @ApiProperty({
         example: 'cd533345-f1f3-48c9-a62e-7dc2da50c8f8',
@@ -18,14 +16,10 @@ export class Almacen {
     @Column("json", { nullable: true })
     resource: any;
 
-
-    @ManyToMany(type => User)
-    @JoinTable()
-    users: User[];
-
-    @ManyToMany(type => Product, product => product.almacenes)
-    Products: Product[];
-    
+    @OneToMany(
+        () => Product, 
+        product => product.inProduct)
+    product: Product;
 
     @Column({
         type: 'timestamp', 
@@ -33,12 +27,13 @@ export class Almacen {
     createdAt: Date;
 
 
+
     @UpdateDateColumn({
         type: 'timestamp', 
         default: () => 'CURRENT_TIMESTAMP' })
     updatedAt: Date;
 
-    
+
     
 
 }

@@ -62,11 +62,11 @@ export class SeedService {
 
     const insertPromises = [];
 
-    products.forEach( product => {
-      insertPromises.push( this.productsService.create( product, user ) );
-    });
+    //products.forEach( product => {
+     // insertPromises.push( this.productsService.create( product, user ) );
+    //});
 
-    await Promise.all( insertPromises );
+    //await Promise.all( insertPromises );
 
 
     return true;
