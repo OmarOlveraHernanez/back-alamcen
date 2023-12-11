@@ -5,6 +5,8 @@ import { ProductImage } from './';
 import { User } from '../../auth/entities/user.entity';
 import { Almacen } from 'src/almacen/entities/almacen.entity';
 import { InProduct } from 'src/in-products/entities/in-product.entity';
+import { OutProduct } from 'src/out-products/entities/out-product.entity';
+import { AlmacenPayment } from 'src/almacen_payment/entities/almacen_payment.entity';
 
 @Entity({ name: 'products' })
 export class Product {
@@ -43,6 +45,16 @@ export class Product {
         { eager: true }
         )
     inProduct: InProduct;
+
+    @ManyToOne(
+        () => OutProduct,
+        outProduct => outProduct.product,
+        { eager: true }
+        )
+    outProduct: OutProduct;
+
+
+    
 
 
     

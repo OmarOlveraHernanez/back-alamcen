@@ -15,6 +15,7 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
 import { AlmacenModule } from './almacen/almacen.module';
 import { InProductsModule } from './in-products/in-products.module';
 import { OutProductsModule } from './out-products/out-products.module';
+import { AlmacenPaymentModule } from './almacen_payment/almacen_payment.module';
 require('dotenv').config();
 const DB_HOST = process.env.DB_HOST;
 const DB_PORT = +process.env.DB_HOST;
@@ -60,6 +61,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD;
     InProductsModule,
 
     OutProductsModule,
+
+    AlmacenPaymentModule,
 
   ],
 })
