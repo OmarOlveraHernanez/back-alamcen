@@ -29,7 +29,8 @@ export class InProductDto {
     @IsString()
     @IsOptional()
     serie?: string;
-
+   
+    
 
 
 }

@@ -92,7 +92,7 @@ export class ProductsService {
       .where("UPPER(prod.resource->>'name') = UPPER(:term) OR UPPER(prod.resource->>'code') = UPPER(:term) OR UPPER(prod.resource->>'serie') = UPPER(:term)", {
         term: term,  
       })
-        .leftJoinAndSelect('pro.almacenes', 'Almacenes')
+        .leftJoinAndSelect('prod.almacenes', 'Almacenes')
         .leftJoinAndSelect('prod.images','prodImages')
         .getOne();
     }

@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { MessagesWsModule } from './messages-ws/messages-ws.module';
 import { AlmacenModule } from './almacen/almacen.module';
 import { InProductsModule } from './in-products/in-products.module';
+import { OutProductsModule } from './out-products/out-products.module';
 require('dotenv').config();
 const DB_HOST = process.env.DB_HOST;
 const DB_PORT = +process.env.DB_HOST;
@@ -57,6 +58,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD;
     AlmacenModule,
 
     InProductsModule,
+
+    OutProductsModule,
 
   ],
 })
