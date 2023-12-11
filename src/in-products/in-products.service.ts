@@ -32,6 +32,11 @@ export class InProductsService {
       let product_entity =  await this.ProductRepository.findOne({ where: { id: product } });
       product_entity.resource.stock += inproductDetails.resource.amount;
       await this.ProductRepository.save(product_entity);
+      inproductDetails.resource.id_product =  product_entity.id;
+      inproductDetails.resource.name =  product_entity.resource.name;
+      inproductDetails.resource.code =  product_entity.resource.code;
+      inproductDetails.resource.serie =  product_entity.resource.serie;
+
       const inProduct = this.inProductRepository.create({
         ...inproductDetails,
         product: product_entity
