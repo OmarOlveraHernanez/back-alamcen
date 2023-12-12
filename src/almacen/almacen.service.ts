@@ -33,8 +33,8 @@ export class AlmacenService {
           users:await this.userRepository.findBy({ id: In(createAlmacenDto.users ) }) });
       
       await this.almacenRepository.save( almacen );
-
-      return { ...almacen };
+      const { id, resource } = almacen;
+      return { id, resource };
       
     } catch (error) {
       this.handleDBExceptions(error);

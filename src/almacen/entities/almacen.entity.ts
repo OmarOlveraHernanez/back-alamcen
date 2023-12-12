@@ -20,8 +20,7 @@ export class Almacen {
     resource: any;
 
 
-    @ManyToMany(type => User)
-    @JoinTable()
+    @ManyToMany(() => User, (user) => user.almacenes)
     users: User[];
 
     @ManyToMany(type => Product, product => product.almacenes)

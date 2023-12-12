@@ -1,4 +1,4 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Product } from '../../products/entities';
 import { LoginUser } from './login.entity';
 import { Almacen } from 'src/almacen/entities/almacen.entity';
@@ -54,7 +54,8 @@ export class User {
 
     
     
-    @ManyToMany(type => Almacen, almacen => almacen.users)
+    @ManyToMany(() => Almacen, (almacen) => almacen.users , { eager: true })
+    @JoinTable()
     almacenes: Almacen[];
 
     @OneToMany(
