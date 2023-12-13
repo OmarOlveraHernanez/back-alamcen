@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
 
@@ -9,6 +9,8 @@ import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginUser } from './entities/login.entity';
+import { Almacen } from 'src/almacen/entities/almacen.entity';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 
 @Injectable()
@@ -17,24 +19,48 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
+    
+    @InjectRepository(Almacen)
+    private readonly alamcenRepository: Repository<Almacen>,
 
     @InjectRepository(LoginUser)
     private readonly loginUserRepository: Repository<LoginUser>,
 
     private readonly jwtService: JwtService,
   ) {}
+  
 
+  async findAll( paginationDto: PaginationDto ) {
+
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    const products = await this.userRepository.find({
+      take: limit,
+      skip: offset,
+      relations: {
+        almacenes: true,
+      }
+    })
+
+    return products.map( ( product ) => ({
+      ...product
+    }))
+  }
 
   async create( createUserDto: CreateUserDto) {
     
     try {
 
-      const { password, ...userData } = createUserDto;
-      
+      const { password, almacenes , ...userData } = createUserDto;
+      let almacenes_entity = [];
+      if(almacenes){
+        almacenes_entity = await this.alamcenRepository.findBy({ id: In(almacenes ) })
+      }
+
       const user = this.userRepository.create({
         ...userData,
-        password: bcrypt.hashSync( password, 10 )
+        password: bcrypt.hashSync( password, 10 ),
+        almacenes: almacenes_entity
       });
 
       await this.userRepository.save( user )

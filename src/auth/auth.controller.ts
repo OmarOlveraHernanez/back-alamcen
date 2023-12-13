@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Headers, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -12,6 +12,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 
 @ApiTags('Auth')
@@ -22,8 +23,16 @@ export class AuthController {
     ) {}
 
 
+  @Get()
+  findAll( @Query() paginationDto:PaginationDto ) {
+      // console.log(paginationDto)
+      return this.authService.findAll( paginationDto );
+  }
+
 
   @Post('register')
+  @Auth( ValidRoles.admin , ValidRoles.superUser )
+  @ApiBearerAuth()
   createUser(@Body() createUserDto: CreateUserDto ) {
     return this.authService.create( createUserDto );
   }
@@ -39,6 +48,7 @@ export class AuthController {
   }
 
   @Get('check-status')
+  @ApiBearerAuth()
   @Auth()
   checkAuthStatus(
     @GetUser() user: User

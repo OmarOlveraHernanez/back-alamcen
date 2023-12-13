@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { User } from './entities/user.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LoginUser } from './entities/login.entity';
+import { Almacen } from 'src/almacen/entities/almacen.entity';
 
 @Module({
   controllers: [AuthController],
@@ -16,7 +17,7 @@ import { LoginUser } from './entities/login.entity';
   imports: [
     ConfigModule,
 
-    TypeOrmModule.forFeature([ User , LoginUser ]),
+    TypeOrmModule.forFeature([ User , LoginUser , Almacen]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),
 
