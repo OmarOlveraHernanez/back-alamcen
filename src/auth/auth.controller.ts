@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Headers, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Headers, Query, Param, Patch, ParseUUIDPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 import { RawHeaders, GetUser, Auth, HttpHeaders } from './decorators';
 import { RoleProtected } from './decorators/role-protected.decorator';
 
-import { CreateUserDto, LoginUserDto } from './dto';
+import { CreateUserDto, LoginUserDto,UpdateUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
@@ -23,7 +23,25 @@ export class AuthController {
     ) {}
 
 
+  @Patch(':id')
+  update(
+    @Param('id', ParseUUIDPipe ) id: string, 
+    @Body() UpdateUserDto: UpdateUserDto,
+  ) {
+    return this.productsService.update( id, UpdateUserDto );
+  }
+
+
+  @Get(':term')
+  @Auth( ValidRoles.admin , ValidRoles.superUser )
+  @ApiBearerAuth()
+  findOne(@Param( 'term' ) term: string) {
+    return this.authService.findOnePlain( term );
+  }
+
   @Get()
+  @Auth( ValidRoles.admin , ValidRoles.superUser )
+  @ApiBearerAuth()
   findAll( @Query() paginationDto:PaginationDto ) {
       // console.log(paginationDto)
       return this.authService.findAll( paginationDto );

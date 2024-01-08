@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -11,6 +11,7 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { LoginUser } from './entities/login.entity';
 import { Almacen } from 'src/almacen/entities/almacen.entity';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { isUUID } from 'class-validator';
 
 
 @Injectable()
@@ -29,21 +30,71 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   
+  async findOnePlain( term: string ) {
+    const {  ...rest } = await this.findOne( term );
+    return {
+      ...rest
+    }
+  }
+
+  async findOne( term: string ) {
+
+    let user: User;
+
+    if ( isUUID(term) ) {
+      //product = await this.productRepository.findOneBy({ id: term });
+      user = await this.userRepository
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.almacenes', 'Almacenes')
+      .where('u.id = :id', { id: term })
+      .getOne();;
+    } else {
+      const queryBuilder = this.userRepository.createQueryBuilder('u'); 
+      user = await queryBuilder
+      .where("UPPER(u.resource->>'fullName') LIKE UPPER(:term) OR UPPER(u.resource->>'direction') LIKE UPPER(:term) OR UPPER(u.resource->>'phone') LIKE UPPER(:term)  OR u.email LIKE :term", {
+        term: `%${term}%`,
+      })
+        .leftJoinAndSelect('u.almacenes', 'Almacenes')
+        
+        .getOne();
+    }
+
+
+    if ( !user ) 
+      throw new NotFoundException(`Product with ${ term } not found`);
+
+    return user;
+  }
 
   async findAll( paginationDto: PaginationDto ) {
 
-    const { limit = 10, offset = 0 } = paginationDto;
-
-    const products = await this.userRepository.find({
+    const { limit = 10, offset = 0 , term} = paginationDto;
+    console.log(term);
+    let users = [];
+    if(!term)
+    users = await this.userRepository.find({
       take: limit,
       skip: offset,
       relations: {
         almacenes: true,
       }
-    })
+    });
+    else{
+      const queryBuilder = this.userRepository.createQueryBuilder('u'); 
+      users = await queryBuilder
+      .where("UPPER(u.resource->>'fullName') LIKE UPPER(:term) OR UPPER(u.resource->>'direction') LIKE UPPER(:term) OR UPPER(u.resource->>'phone') LIKE UPPER(:term)  OR u.email LIKE :term", {
+        term: `%${term}%`,
+      })
+      .leftJoinAndSelect('u.almacenes', 'Almacenes')
+      .getMany();;
+    }
+    
 
-    return products.map( ( product ) => ({
-      ...product
+
+    
+
+    return users.map( ( user ) => ({
+      ...user
     }))
   }
 
