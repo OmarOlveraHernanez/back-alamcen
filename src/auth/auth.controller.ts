@@ -8,12 +8,12 @@ import { AuthService } from './auth.service';
 import { RawHeaders, GetUser, Auth, HttpHeaders } from './decorators';
 import { RoleProtected } from './decorators/role-protected.decorator';
 
-import { CreateUserDto, LoginUserDto,UpdateUserDto } from './dto';
+import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -24,11 +24,13 @@ export class AuthController {
 
 
   @Patch(':id')
+  @Auth( ValidRoles.admin , ValidRoles.superUser )
+  @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe ) id: string, 
     @Body() UpdateUserDto: UpdateUserDto,
   ) {
-    return this.productsService.update( id, UpdateUserDto );
+    return this.authService.update( id, UpdateUserDto );
   }
 
 

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
 
@@ -12,6 +12,7 @@ import { LoginUser } from './entities/login.entity';
 import { Almacen } from 'src/almacen/entities/almacen.entity';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { isUUID } from 'class-validator';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Injectable()
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly loginUserRepository: Repository<LoginUser>,
 
     private readonly jwtService: JwtService,
+    private readonly dataSource: DataSource,
   ) {}
   
   async findOnePlain( term: string ) {
@@ -35,6 +37,43 @@ export class AuthService {
     return {
       ...rest
     }
+  }
+
+
+
+  async update( id: string, UpdateUserDto: UpdateUserDto ) {
+  
+    const { password , almacenes ,...toUpdate } = UpdateUserDto;
+
+
+    const user = await this.userRepository.preload({ id, ...toUpdate, password: bcrypt.hashSync( password, 10 ) });
+
+    if ( !user ) throw new NotFoundException(`Product with id: ${ id } not found`);
+
+    // Create query runner
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+
+     
+  
+      
+      await queryRunner.manager.save( user );
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return this.findOnePlain( id );
+      
+    } catch (error) {
+
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      this.handleDBErrors(error);
+    }
+  
   }
 
   async findOne( term: string ) {
